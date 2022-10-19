@@ -8,7 +8,8 @@ const gameOptions = {
         gap: 50,
         boundsGap: 200
     },
-    gravity: 500
+    gravity: 500,
+    speed: 1.5
 };
 
 const gameState = {
@@ -55,6 +56,7 @@ class GameScene extends Phaser.Scene {
     };
 
     create() {
+        // this.sound.mute = true;
         gameState.active = true;
 
         // create background
@@ -86,6 +88,7 @@ class GameScene extends Phaser.Scene {
                 gameState.sounds.die.play();
                 gameState.sounds.hit.play();
             };
+            gameState.pipeLoop.destroy();
         };
 
         gameState.pipeLoop = this.time.addEvent({
@@ -147,12 +150,13 @@ class GameScene extends Phaser.Scene {
             gameState.pipeLoop.paused = true;
             this.add.image(config.width as number / 2, config.height as number / 2, 'gameover');
             gameState.player.anims.play('flap', false);
+            if (gameState.player.body.bottom === config.height) this.physics.pause();
         };
 
         if (gameState.active) {
-            gameState.base.tilePositionX += 1.5;
+            gameState.base.tilePositionX += gameOptions.speed;
             gameState.pipes.getChildren().forEach((pipe: Phaser.Physics.Arcade.Sprite, index: number) => {
-                pipe.x += -1.5;
+                pipe.x -= gameOptions.speed;
                 // destroy pipe when out of view
                 if (pipe.getBounds().x < -pipe.displayWidth) pipe.destroy();
                 // const overPipe = pipe.getBounds().x/gameState.player.getBounds().x < 1;
@@ -163,6 +167,7 @@ class GameScene extends Phaser.Scene {
                 //     };
                 // };
             });
+            // set player rotation based on velocity
             const { velocity } = gameState.player.body;
             gameState.player.setRotation((velocity.y/gameOptions.gravity));
         };
@@ -177,15 +182,16 @@ const config: Phaser.Types.Core.GameConfig = {
     physics: {
         default: 'arcade',
         arcade: {
+            // debug: true,
             gravity: {
                 y: gameOptions.gravity
             },
         },
     },
-    fps: {
-        target: 60,
-        forceSetTimeOut: true
-    },
+    // fps: {
+    //     target: 60,
+    //     forceSetTimeOut: true
+    // },
     pixelArt: true,
     parent: 'game',
     scene: [GameScene]

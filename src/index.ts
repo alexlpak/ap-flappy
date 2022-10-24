@@ -9,7 +9,7 @@ const gameOptions = {
         boundsGap: 200
     },
     gravity: 500,
-    speed: 1.5
+    speed: 3
 };
 
 const gameState = {
@@ -56,7 +56,6 @@ class GameScene extends Phaser.Scene {
     };
 
     create() {
-        // this.sound.mute = true;
         gameState.active = true;
 
         // create background
@@ -111,10 +110,6 @@ class GameScene extends Phaser.Scene {
         gameState.base = this.add.tileSprite(config.width as number / 2, 456, 336, 112, 'base');
         gameState.base.depth = 100;
 
-        this.physics.add.collider(gameState.player, gameState.base, function(player, base) {
-            gameOver();
-        });
-
         gameState.sounds = {
             die: this.sound.add('die'),
             hit: this.sound.add('hit'),
@@ -157,15 +152,6 @@ class GameScene extends Phaser.Scene {
             gameState.base.tilePositionX += gameOptions.speed;
             gameState.pipes.getChildren().forEach((pipe: Phaser.Physics.Arcade.Sprite, index: number) => {
                 pipe.x -= gameOptions.speed;
-                // destroy pipe when out of view
-                if (pipe.getBounds().x < -pipe.displayWidth) pipe.destroy();
-                // const overPipe = pipe.getBounds().x/gameState.player.getBounds().x < 1;
-                // if (overPipe) {
-                //     if (gameState.currentPipe !== pipe) {
-                //         gameState.currentPipe = pipe;
-                //         console.log('counting');
-                //     };
-                // };
             });
             // set player rotation based on velocity
             const { velocity } = gameState.player.body;
@@ -182,16 +168,15 @@ const config: Phaser.Types.Core.GameConfig = {
     physics: {
         default: 'arcade',
         arcade: {
-            // debug: true,
             gravity: {
                 y: gameOptions.gravity
             },
         },
     },
-    // fps: {
-    //     target: 60,
-    //     forceSetTimeOut: true
-    // },
+    fps: {
+        target: 60,
+        forceSetTimeOut: true
+    },
     pixelArt: true,
     parent: 'game',
     scene: [GameScene]

@@ -32,9 +32,10 @@ export default class GameScene extends Phaser.Scene {
         state.pipes = this.physics.add.group();
 
         state.background = this.add.image(0, 0, 'background').setOrigin(0, 0);
+
         state.base = this.add.tileSprite(config.width as number / 2, 456, 336, 112, 'base');
         state.base.depth = 100;
-        
+
         function createPipe() {
             function randomIntFromInterval(min: number, max: number) { // min and max included 
                 return Math.floor(Math.random() * (max - min + 1) + min)
@@ -87,7 +88,11 @@ export default class GameScene extends Phaser.Scene {
         };
 
         // set collider
-        this.physics.add.collider(state.player, state.pipes, function(player, pipe) {
+        this.physics.add.collider(state.player, state.pipes, () => {
+            gameOver();
+        });
+
+        this.physics.add.collider(state.player, state.base, () => {
             gameOver();
         });
 
@@ -103,18 +108,20 @@ export default class GameScene extends Phaser.Scene {
             state.player.setVelocityY(-200);
             state.sounds.wing.play();
         });
+
+        this.physics.add.existing(state.base, true);
     };
 
     update() {
         state.player.anims.play('flap', true);
-
+        
         if (state.active === false) {
             state.pipeLoop.paused = true;
             this.add.image(config.width as number / 2, config.height as number / 2, 'gameover');
             state.player.anims.play('flap', false);
             if (state.player.body.bottom === config.height) this.physics.pause();
         };
-
+        
         if (state.active) {
             state.base.tilePositionX += options.speed;
             state.pipes.getChildren().forEach((pipe: Phaser.Physics.Arcade.Sprite, index: number) => {
